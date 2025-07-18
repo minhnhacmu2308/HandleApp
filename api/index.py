@@ -1,4 +1,4 @@
 from app import app
 
 # Export app cho Vercel
-handler = app 
+app.debug = False 
