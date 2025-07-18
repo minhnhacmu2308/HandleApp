@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xử lý dữ liệu Excel</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      max-width: 700px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      font-weight: 300;
+    }
+
+    .upload-section {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 30px;
+      margin: 20px 0;
+      border: 2px dashed #007bff;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      margin: 20px 0;
+    }
+
+    .file-input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-label {
+      display: inline-block;
+      padding: 15px 30px;
+      background: linear-gradient(45deg, #28a745, #20c997);
+      color: white;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .file-input-label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .file-info {
+      background: #e7f3ff;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #007bff;
+    }
+
+    .file-list {
+      text-align: left;
+      margin: 20px 0;
+    }
+
+    .file-item {
+      background: #e9ecef;
+      padding: 10px 15px;
+      margin: 5px 0;
+      border-radius: 5px;
+      font-family: monospace;
+      color: #495057;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .file-item .file-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+
+    .delete-btn:hover {
+      background: #c82333;
+    }
+
+    .no-files {
+      color: #6c757d;
+      font-style: italic;
+      padding: 20px;
+    }
+
+    .handle-btn {
+      background: linear-gradient(45deg, #007bff, #0056b3);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2em;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      margin-top: 20px;
+    }
+
+    .handle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
+
+    .handle-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .flash-messages {
+      margin: 20px 0;
+    }
+
+    .flash-message {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .flash-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .flash-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .instructions {
+      background: #e7f3ff;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .instructions h3 {
+      color: #0056b3;
+      margin-top: 0;
+    }
+
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 5px 0;
+      color: #495057;
+    }
+
+    .upload-btn {
+      background: linear-gradient(45deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 1em;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .upload-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🔄 Xử lý dữ liệu Excel</h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+      <div class="flash-message {% if category == 'success' %}flash-success{% else %}flash-error{% endif %}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <h3>📤 Upload File Excel</h3>
+      <p>Chọn file Excel (.xls hoặc .xlsx) để upload vào thư mục xử lý</p>
+
+      <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <input type="hidden" name="action" value="upload">
+        <div class="file-input-wrapper">
+          <input type="file" name="file" id="fileInput" class="file-input" accept=".xls,.xlsx"
+            onchange="updateFileName()">
+          <label for="fileInput" class="file-input-label">
+            📁 Chọn File Excel
+          </label>
+        </div>
+        <div id="fileName" style="margin: 10px 0; color: #007bff; font-weight: bold;"></div>
+        <button type="submit" class="upload-btn" id="uploadBtn" disabled>
+          📤 Upload File
+        </button>
+      </form>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <h3>📋 Hướng dẫn sử dụng:</h3>
+      <ol>
+        <li><strong>Upload file:</strong> Chọn file Excel cần xử lý và nhấn "Upload File"</li>
+        <li><strong>Xử lý file:</strong> Nhấn nút "Handle Files" để xử lý file đã upload</li>
+        <li><strong>Download:</strong> File đã xử lý sẽ được lưu vào thư mục <strong>fileAfterHandle</strong></li>
+      </ol>
+    </div>
+
+    <!-- File Information -->
+    <div class="file-info">
+      <h3>📁 Files trong thư mục fileBeforHandle:</h3>
+      <div class="file-list">
+        {% if files %}
+        {% for file in files %}
+        <div class="file-item">
+          <span>📄 {{ file.split('/')[-1] }}</span>
+          <div class="file-actions">
+            <button class="delete-btn" onclick="deleteFile('{{ file.split('/')[-1] }}')">🗑️ Xóa</button>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-files">
+          Không có file Excel nào trong thư mục
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Handle Button -->
+    <form method="POST" style="display: inline;">
+      <input type="hidden" name="action" value="handle">
+      <button type="submit" class="handle-btn" {% if not files %}disabled{% endif %}>
+        {% if files %}
+        🚀 Handle Files
+        {% else %}
+        ⏳ No Files to Handle
+        {% endif %}
+      </button>
+    </form>
+
+    <div style="margin-top: 30px; color: #6c757d; font-size: 0.9em;">
+      <p>💡 Hỗ trợ định dạng: .xls, .xlsx</p>
+      <p>⚡ File đã xử lý sẽ được lưu vào thư mục <strong>fileAfterHandle</strong></p>
+      <p>📝 Tên file: [tên gốc] + "_done" (ví dụ: data.xlsx → data_done.xlsx)</p>
+    </div>
+  </div>
+
+  <script>
+    function updateFileName() {
+      const fileInput = document.getElementById('fileInput');
+      const fileName = document.getElementById('fileName');
+      const uploadBtn = document.getElementById('uploadBtn');
+
+      if (fileInput.files.length > 0) {
+        fileName.textContent = '📄 ' + fileInput.files[0].name;
+        uploadBtn.disabled = false;
+      } else {
+        fileName.textContent = '';
+        uploadBtn.disabled = true;
+      }
+    }
+
+    function deleteFile(filename) {
+      if (confirm('Bạn có chắc muốn xóa file "' + filename + '"?')) {
+        // Gửi request xóa file
+        fetch('/delete_file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            filename: filename
+          })
+        }).then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            alert('Lỗi khi xóa file');
+          }
+        });
+      }
+    }
+  </script>
+</body>
+
+</html>
