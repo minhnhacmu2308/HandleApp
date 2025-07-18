@@ -18,11 +18,20 @@ OUTPUT_FOLDER = 'fileAfterHandle'
 ALLOWED_EXTENSIONS = {'xls', 'xlsx'}
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Tạo thư mục nếu chưa tồn tại
-if not os.path.exists(INPUT_FOLDER):
-    os.makedirs(INPUT_FOLDER)
-if not os.path.exists(OUTPUT_FOLDER):
-    os.makedirs(OUTPUT_FOLDER)
+# Tạo thư mục nếu chưa tồn tại (chỉ khi không phải trên Vercel)
+def create_folders():
+    try:
+        if not os.path.exists(INPUT_FOLDER):
+            os.makedirs(INPUT_FOLDER)
+        if not os.path.exists(OUTPUT_FOLDER):
+            os.makedirs(OUTPUT_FOLDER)
+    except OSError:
+        # Trên Vercel, hệ thống file là read-only, bỏ qua lỗi
+        pass
+
+# Chỉ tạo thư mục khi chạy locally
+if __name__ == '__main__':
+    create_folders()
 
 def allowed_file(filename):
     """Kiểm tra xem file có được phép upload không"""
@@ -688,8 +697,15 @@ def process_data(file_path):
 def get_files_in_input_folder():
     """Lấy danh sách file Excel trong thư mục input"""
     excel_files = []
-    for ext in ['*.xls', '*.xlsx']:
-        excel_files.extend(glob.glob(os.path.join(INPUT_FOLDER, ext)))
+    try:
+        for ext in ['*.xls', '*.xlsx']:
+            excel_files.extend(glob.glob(os.path.join(INPUT_FOLDER, ext)))
+    except OSError:
+        # Trên Vercel, sử dụng thư mục tạm thời
+        import tempfile
+        temp_dir = tempfile.gettempdir()
+        for ext in ['*.xls', '*.xlsx']:
+            excel_files.extend(glob.glob(os.path.join(temp_dir, ext)))
     return excel_files
 
 @app.route('/', methods=['GET', 'POST'])
@@ -712,7 +728,13 @@ def index():
             
             if file and file.filename and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                file_path = os.path.join(INPUT_FOLDER, filename)
+                
+                # Trên Vercel, sử dụng thư mục tạm thời
+                try:
+                    file_path = os.path.join(INPUT_FOLDER, filename)
+                except OSError:
+                    import tempfile
+                    file_path = os.path.join(tempfile.gettempdir(), filename)
                 
                 try:
                     file.save(file_path)
@@ -744,7 +766,14 @@ def index():
                 # Tạo tên file output: tên gốc + "_done"
                 name_without_ext = os.path.splitext(filename)[0]
                 output_filename = f"{name_without_ext}_done.xlsx"
-                output_path = os.path.join(OUTPUT_FOLDER, output_filename)
+                
+                # Trên Vercel, sử dụng thư mục tạm thời
+                try:
+                    output_path = os.path.join(OUTPUT_FOLDER, output_filename)
+                except OSError:
+                    import tempfile
+                    output_path = os.path.join(tempfile.gettempdir(), output_filename)
+                
                 df_processed.to_excel(output_path, index=False, engine='openpyxl')
                 
                 # Lưu thông tin file để sử dụng cho download
@@ -774,7 +803,13 @@ def delete_file():
         if not filename:
             return {'error': 'Không có tên file'}, 400
         
+        # Thử tìm file trong thư mục input trước
         file_path = os.path.join(INPUT_FOLDER, filename)
+        
+        if not os.path.exists(file_path):
+            # Thử tìm trong thư mục tạm thời
+            import tempfile
+            file_path = os.path.join(tempfile.gettempdir(), filename)
         
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -851,4 +886,4 @@ def skip_download():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8085) 
+    app.run(debug=True, host='0.0.0.0', port=8086) 
