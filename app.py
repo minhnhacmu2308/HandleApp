@@ -177,7 +177,8 @@ def mask_sensitive_info(text, filename=None):
         'PART NUMBER', 'PART', 'SỐ SERIAL', 'SERIAL', 'SERIAL NO', 'TK', 'SERI', 'SỐ SERI', 'SERIES', 'TKHQ', 'TO KHAI', 'TỜ KHAI', 'TỜ KHAI HẢI QUAN',
         'MÃ', 'MÃ QLNB', 'QLNB', 'MÃ HÀNG', 'MA HANG', 'MH', 'SAP', 'ERP', 'C/O', 'PN', 'P.N', 'P/N', 'SN', 'S.N', 'S/N', 'CODE', 'BARCODE',
         'MODEL', 'MDEL', 'SHIP', 'SKU', 'LO', 'LOT', 'LÔ', 'BATCH', 'BATH', 'SLOT', 'ODER', 'INVOICE', 'INVOICENO', 'INVOICE NO',
-        'HÓA ĐƠN', 'SỐ HÓA ĐƠN', 'HÓA ĐƠN SỐ', 'ĐG', 'ĐƠN GIÁ', 'PHÍ GIA CÔNG', 'PGC', 'PHÍ THUÊ', 'PHÍ THUÊ GIA CÔNG', 'PTGC', 'PHÍ GC', 'ĐƠN GIÁ GIA CÔNG', 'DON GIA GIA CONG', 'ĐGGC', 'PHÍ CHO THUÊ', 'KÝ HIỆU', 'KÍ HIỆU'
+        'HÓA ĐƠN', 'SỐ HÓA ĐƠN', 'HÓA ĐƠN SỐ', 'ĐG', 'ĐƠN GIÁ', 'PHÍ GIA CÔNG', 'PGC', 'PHÍ THUÊ', 'PHÍ THUÊ GIA CÔNG', 'PTGC', 'PHÍ GC', 'ĐƠN GIÁ GIA CÔNG', 'DON GIA GIA CONG', 'ĐGGC', 'PHÍ CHO THUÊ', 'KÝ HIỆU', 'KÍ HIỆU',
+        'TCB', 'LTD', 'HSD', 'HẠN SỬ DỤNG', 'NGÀY SẢN XUẤT', 'HẠN DÙNG', 'SX TẠI', 'NGÀY SX', 'NXS', 'SỐ CÔNG BỐ', 'SẢN XUẤT TẠI'
     ]
     
     # Sắp xếp từ khóa theo độ dài giảm dần để ưu tiên từ khóa dài hơn
@@ -348,7 +349,8 @@ def mask_sensitive_info_X(text):
     
     # Danh sách các từ khóa cần ẩn cho file X
     sensitive_keywords = [
-        'NSX', 'HIỆU', 'NHÃN HIỆU', 'THƯƠNG HIỆU', 'BRAND', 'CSSX', 'NHÀ MÁY', 'CS', 'BUYER', 'CSX', 'MFG', 'PPRODUCE', 'MANAFACTURE', 'MNF', 'NXX', 'HSX', 'HÃNG', 'CTY', 'CÔNG TY', 'CONG TY', 'NCC', 'NPP', 'PO', 'SỐ PO', 'PO NO', 'SHĐ', 'SỐ HỢP ĐỒNG', 'HỢP ĐỒNG SỐ', 'HĐS', 'HOP DONG SO', 'SO HOP DONG', 'CONTRACT', 'CONTRACTNO', 'PART NUMBER', 'PART', 'SỐ SERIAL', 'SERIAL', 'SERIAL NO', 'TK', 'TKHQ', 'TO KHAI', 'TỜ KHAI', 'TỜ KHAI HẢI QUAN', 'MÃ', 'MÃ QLNB', 'QLNB', 'MÃ HÀNG', 'MA HANG', 'MH', 'SAP', 'ERP', 'C/O', 'PN', 'P.N', 'P/N', 'SN', 'S.N', 'S/N', 'CODE', 'BARCODE', 'MODEL', 'SHIP', 'SKU', 'LO', 'LOT', 'LÔ', 'BATCH', 'BATH', 'SLOT', 'ODER', 'INVOICE', 'INVOICENO', 'INVOICE NO', 'HÓA ĐƠN', 'SỐ HÓA ĐƠN', 'HÓA ĐƠN SỐ', 'ĐG', 'ĐƠN GIÁ', 'PHÍ GIA CÔNG', 'PGC', 'PHÍ THUÊ', 'PHÍ THUÊ GIA CÔNG', 'PTGC', 'PHÍ GC', 'ĐƠN GIÁ GIA CÔNG', 'DON GIA GIA CONG', 'ĐGGC', 'PHÍ CHO THUÊ', 'KÝ HIỆU', 'KÍ HIỆU'
+        'NSX', 'HIỆU', 'NHÃN HIỆU', 'THƯƠNG HIỆU', 'BRAND', 'CSSX', 'NHÀ MÁY', 'CS', 'BUYER', 'CSX', 'MFG', 'PPRODUCE', 'MANAFACTURE', 'MNF', 'NXX', 'HSX', 'HÃNG', 'CTY', 'CÔNG TY', 'CONG TY', 'NCC', 'NPP', 'PO', 'SỐ PO', 'PO NO', 'SHĐ', 'SỐ HỢP ĐỒNG', 'HỢP ĐỒNG SỐ', 'HĐS', 'HOP DONG SO', 'SO HOP DONG', 'CONTRACT', 'CONTRACTNO', 'PART NUMBER', 'PART', 'SỐ SERIAL', 'SERIAL', 'SERIAL NO', 'TK', 'TKHQ', 'TO KHAI', 'TỜ KHAI', 'TỜ KHAI HẢI QUAN', 'MÃ', 'MÃ QLNB', 'QLNB', 'MÃ HÀNG', 'MA HANG', 'MH', 'SAP', 'ERP', 'C/O', 'PN', 'P.N', 'P/N', 'SN', 'S.N', 'S/N', 'CODE', 'BARCODE', 'MODEL', 'SHIP', 'SKU', 'LO', 'LOT', 'LÔ', 'BATCH', 'BATH', 'SLOT', 'ODER', 'INVOICE', 'INVOICENO', 'INVOICE NO', 'HÓA ĐƠN', 'SỐ HÓA ĐƠN', 'HÓA ĐƠN SỐ', 'ĐG', 'ĐƠN GIÁ', 'PHÍ GIA CÔNG', 'PGC', 'PHÍ THUÊ', 'PHÍ THUÊ GIA CÔNG', 'PTGC', 'PHÍ GC', 'ĐƠN GIÁ GIA CÔNG', 'DON GIA GIA CONG', 'ĐGGC', 'PHÍ CHO THUÊ', 'KÝ HIỆU', 'KÍ HIỆU',
+        'TCB', 'LTD', 'HSD', 'HẠN SỬ DỤNG', 'NGÀY SẢN XUẤT', 'HẠN DÙNG', 'SX TẠI', 'NGÀY SX', 'NXS', 'SỐ CÔNG BỐ', 'SẢN XUẤT TẠI'
     ]
     
     # Sắp xếp từ khóa theo độ dài giảm dần để ưu tiên từ khóa dài hơn
