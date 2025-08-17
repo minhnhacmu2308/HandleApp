@@ -121,12 +121,12 @@ def map_loai_hinh_X(to_khai):
 
 def mask_sensitive_info(text, filename=None):
     """
-    Ẩn thông tin nhạy cảm trong text bằng cách thay thế từ khóa và các ký tự sau nó
-    - Nếu có dấu chấm/phẩy: ẩn đến dấu chấm/phẩy
-    - Nếu không có: ẩn 7 ký tự (không tính khoảng trắng)
-    - Trường hợp đặc biệt: từ "tín hiệu" và "hiệu ứng" sẽ không đánh dấu từ "hiệu"
+    Xóa thông tin nhạy cảm trong text bằng cách xóa hoàn toàn từ khóa và các ký tự sau nó
+    - Nếu có dấu chấm/phẩy: xóa đến dấu chấm/phẩy
+    - Nếu không có: xóa 7 ký tự (không tính khoảng trắng)
+    - Trường hợp đặc biệt: từ "tín hiệu" và "hiệu ứng" sẽ không bị xóa từ "hiệu"
     - Trường hợp đặc biệt: nếu có "100%" thì chỉ giữ lại phần từ đầu đến "100%"
-    - Mask tất cả mã sản phẩm (chuỗi viết hoa/số/gạch dài từ 4 ký tự trở lên)
+    - Xóa tất cả mã sản phẩm (chuỗi viết hoa/số/gạch dài từ 4 ký tự trở lên)
     """
 
      # Kiểm tra nếu có filename và bắt đầu bằng 'X'
@@ -164,12 +164,10 @@ def mask_sensitive_info(text, filename=None):
                         # Xóa từ #& cuối đến cuối
                         text = text[:last_pos_in_remaining].strip()
     
-    # Mask tất cả mã sản phẩm (chuỗi viết hoa/số/gạch dài từ 4 ký tự trở lên)
-    def mask_code(match):
-        return '$' * len(match.group())
-    text = re.sub(r'\b[A-Z0-9\-_/]{4,}\b', mask_code, text)
+    # Xóa tất cả mã sản phẩm (chuỗi viết hoa/số/gạch dài từ 4 ký tự trở lên)
+    text = re.sub(r'\b[A-Z0-9\-_/]{4,}\b', '', text)
     
-    # Danh sách các từ khóa cần ẩn
+    # Danh sách các từ khóa cần xóa
     sensitive_keywords = [
         'NSX','NHÀ SX', 'HIỆU', 'NHÃN HIỆU', 'THƯƠNG HIỆU', 'BRAND', 'CSSX', 'NHÀ MÁY', 'CS', 'CSXX',
         'BUYER', 'CSX', 'MFG', 'PPRODUCE', 'MANAFACTURE', 'MNF', 'NXX', 'HSX', 'HÃNG', 'CTY', 'CÔNG TY',
@@ -243,24 +241,15 @@ def mask_sensitive_info(text, filename=None):
                         chars_to_mask += 1
                     masked_chars += 1
                 
-                # Tạo chuỗi thay thế - logic cũ: ẩn từ khóa + 7 ký tự sau
-                replacement = '$' * len(keyword)  # Thay thế từ khóa
-                if chars_to_mask > 0:
-                    replacement += '$' * chars_to_mask  # Thêm dấu sao cho 7 ký tự sau
-                
-                # Thay thế trong text
-                protected_text = protected_text[:start_pos] + replacement + remaining_text[masked_chars:]
+                # Xóa hoàn toàn từ khóa + 7 ký tự sau
+                protected_text = protected_text[:start_pos] + remaining_text[masked_chars:]
                 continue
             
-            # Có dấu câu, ẩn đến dấu đó
+            # Có dấu câu, xóa đến dấu đó
             chars_to_mask = stop_pos + 1  # +1 để bao gồm cả dấu câu
             
-            # Tạo chuỗi thay thế - logic cũ: ẩn từ khóa + đến dấu câu
-            replacement = '$' * len(keyword)  # Thay thế từ khóa
-            replacement += '$' * chars_to_mask  # Thêm dấu sao cho đến dấu câu
-            
-            # Thay thế trong text
-            protected_text = protected_text[:start_pos] + replacement + remaining_text[chars_to_mask:]
+            # Xóa hoàn toàn từ khóa + đến dấu câu
+            protected_text = protected_text[:start_pos] + remaining_text[chars_to_mask:]
     
     # Khôi phục từ "tín hiệu" và "hiệu ứng" về trạng thái ban đầu
     masked_text = protected_text.replace(tin_hieu_placeholder, "tín hiệu")
@@ -283,14 +272,10 @@ def mask_sensitive_info(text, filename=None):
             # Regex nhận diện mã sản phẩm: ít nhất 2 nhóm liên tiếp, mỗi nhóm là chữ/số/gạch ngang, cách nhau bởi dấu cách
             product_pattern = re.compile(r'(?:\s+[A-Z0-9\-]+){2,}', re.IGNORECASE)
             if product_pattern.match(remaining_text):
-                chars_to_mask = len(remaining_text)
-                replacement = "qua sử dụng"
-                if chars_to_mask > 0:
-                    replacement += '$' * chars_to_mask
-                masked_text = masked_text[:start_pos] + replacement + remaining_text[chars_to_mask:]
+                # Xóa hoàn toàn phần mã sản phẩm sau "qua sử dụng"
+                masked_text = masked_text[:start_pos] + "qua sử dụng"
     
-    # Sau khi masking, thay * thành $
-    masked_text = masked_text.replace('*', '$')   
+    # Không cần thay thế ký tự nữa vì đã xóa hoàn toàn   
     
     # Xử lý đặc biệt: nếu có 'mới 100%' hoặc 'Mới 100%' thì chỉ giữ lại phần từ đầu đến '100%'
     if 'mới 100%' in masked_text:
@@ -304,11 +289,11 @@ def mask_sensitive_info(text, filename=None):
 
 def mask_sensitive_info_X(text):
     """
-    Hàm xử lý masking cho file X (file xuất)
-    - Ẩn thông tin nhạy cảm theo từ khóa
-    - Nếu có dấu chấm/phẩy: ẩn đến dấu chấm/phẩy
-    - Nếu không có: ẩn 7 ký tự (không tính khoảng trắng)
-    - Trường hợp đặc biệt: từ "tín hiệu" và "hiệu ứng" sẽ không đánh dấu từ "hiệu"
+    Hàm xử lý xóa thông tin nhạy cảm cho file X (file xuất)
+    - Xóa thông tin nhạy cảm theo từ khóa
+    - Nếu có dấu chấm/phẩy: xóa đến dấu chấm/phẩy
+    - Nếu không có: xóa 7 ký tự (không tính khoảng trắng)
+    - Trường hợp đặc biệt: từ "tín hiệu" và "hiệu ứng" sẽ không bị xóa từ "hiệu"
     """
     if pd.isna(text) or not isinstance(text, str):
         return text
@@ -342,12 +327,10 @@ def mask_sensitive_info_X(text):
                         # Xóa từ #& cuối đến cuối
                         text = text[:last_pos_in_remaining].strip()
 
-     # Mask tất cả mã sản phẩm (chuỗi viết hoa/số/gạch dài từ 4 ký tự trở lên)
-    def mask_code(match):
-        return '$' * len(match.group())
-    text = re.sub(r'\b[A-Z0-9\-_/]{4,}\b', mask_code, text)
+     # Xóa tất cả mã sản phẩm (chuỗi viết hoa/số/gạch dài từ 4 ký tự trở lên)
+    text = re.sub(r'\b[A-Z0-9\-_/]{4,}\b', '', text)
     
-    # Danh sách các từ khóa cần ẩn cho file X
+    # Danh sách các từ khóa cần xóa cho file X
     sensitive_keywords = [
         'NSX','NHÀ SX', 'HIỆU', 'NHÃN HIỆU', 'THƯƠNG HIỆU', 'BRAND', 'CSSX', 'NHÀ MÁY', 'CS', 'BUYER', 'CSX', 'MFG', 'PPRODUCE', 'MANAFACTURE', 'MNF', 'NXX', 'HSX', 'HÃNG', 'CTY', 'CÔNG TY', 'CONG TY', 'NCC', 'NPP', 'PO', 'SỐ PO', 'PO NO', 'SHĐ', 'SỐ HỢP ĐỒNG', 'HỢP ĐỒNG SỐ', 'HĐS', 'HOP DONG SO', 'SO HOP DONG', 'CONTRACT', 'CONTRACTNO', 'PART NUMBER', 'PART', 'SỐ SERIAL', 'SERIAL', 'SERIAL NO', 'TK', 'TKHQ', 'TO KHAI', 'TỜ KHAI', 'TỜ KHAI HẢI QUAN', 'MÃ', 'MÃ QLNB', 'QLNB', 'MÃ HÀNG', 'MA HANG', 'MH', 'SAP', 'ERP', 'C/O', 'PN', 'P.N', 'P/N', 'SN', 'S.N', 'S/N', 'CODE', 'BARCODE', 'MODEL', 'SHIP', 'SKU', 'LO', 'LOT', 'LÔ', 'BATCH', 'BATH', 'SLOT', 'ODER', 'INVOICE', 'INVOICENO', 'INVOICE NO', 'HÓA ĐƠN', 'SỐ HÓA ĐƠN', 'HÓA ĐƠN SỐ', 'ĐG', 'ĐƠN GIÁ', 'PHÍ GIA CÔNG', 'PGC', 'PHÍ THUÊ', 'PHÍ THUÊ GIA CÔNG', 'PTGC', 'PHÍ GC', 'ĐƠN GIÁ GIA CÔNG', 'DON GIA GIA CONG', 'ĐGGC', 'PHÍ CHO THUÊ', 'KÝ HIỆU', 'KÍ HIỆU',
         'TCB', 'LTD', 'HSD', 'HẠN SỬ DỤNG', 'NGÀY SẢN XUẤT', 'HẠN DÙNG', 'SX TẠI', 'NGÀY SX', 'NXS', 'SỐ CÔNG BỐ', 'SẢN XUẤT TẠI'
@@ -405,12 +388,8 @@ def mask_sensitive_info_X(text):
                 # Có dấu câu, ẩn đến dấu đó
                 chars_to_mask = stop_pos + 1  # +1 để bao gồm cả dấu câu
                 
-                # Tạo chuỗi thay thế - ẩn từ khóa + đến dấu câu
-                replacement = '$' * len(keyword)  # Thay thế từ khóa
-                replacement += '$' * chars_to_mask  # Thêm dấu sao cho đến dấu câu
-                
-                # Thay thế trong text
-                protected_text = protected_text[:start_pos] + replacement + remaining_text[chars_to_mask:]
+                # Xóa hoàn toàn từ khóa + đến dấu câu
+                protected_text = protected_text[:start_pos] + remaining_text[chars_to_mask:]
             else:
                 # Không có dấu câu nào, sử dụng logic 7 ký tự không phải khoảng trắng
                 chars_to_mask = 0
@@ -424,20 +403,14 @@ def mask_sensitive_info_X(text):
                         chars_to_mask += 1
                     masked_chars += 1
                 
-                # Tạo chuỗi thay thế - ẩn từ khóa + 7 ký tự sau
-                replacement = '$' * len(keyword)  # Thay thế từ khóa
-                if chars_to_mask > 0:
-                    replacement += '$' * chars_to_mask  # Thêm dấu sao cho 7 ký tự sau
-                
-                # Thay thế trong text
-                protected_text = protected_text[:start_pos] + replacement + remaining_text[masked_chars:]
+                # Xóa hoàn toàn từ khóa + 7 ký tự sau
+                protected_text = protected_text[:start_pos] + remaining_text[masked_chars:]
     
     # Khôi phục từ "tín hiệu" và "hiệu ứng" về trạng thái ban đầu
     masked_text = protected_text.replace(tin_hieu_placeholder, "tín hiệu")
     masked_text = masked_text.replace(hieu_ung_placeholder, "hiệu ứng")
     
-    # Sau khi masking, thay * thành $
-    masked_text = masked_text.replace('$', '$')
+    # Không cần thay thế ký tự nữa vì đã xóa hoàn toàn
     
     # Xử lý đặc biệt: nếu có 'mới 100%' hoặc 'Mới 100%' thì chỉ giữ lại phần từ đầu đến '100%'
     if 'mới 100%' in masked_text:
@@ -655,10 +628,10 @@ def process_data(file_path):
             if 'Mã hs nhập' in df_processed.columns:
                 df_processed['Mã hs nhập'] = df_processed['Mã hs nhập'].astype(str).str.replace("'", "")
         
-        # Xử lý thuế suất BVMT - chuyển đổi 0/1 thành KCT/CT
+        # Xử lý thuế suất BVMT - 0 và rỗng = KCT, còn lại = CT
         if 'Thuế suất BVMT' in df_processed.columns:
             df_processed['Thuế suất BVMT'] = df_processed['Thuế suất BVMT'].apply(
-                lambda x: 'KCT' if pd.notna(x) and str(x).strip() == '0' else ('CT' if pd.notna(x) and str(x).strip() == '1' else x)
+                lambda x: 'KCT' if pd.isna(x) or str(x).strip() == '' or str(x).strip() == '0' else 'CT'
             )
         
         # Xử lý cột Loại hình dựa trên cột Tờ khai
@@ -674,14 +647,14 @@ def process_data(file_path):
                 # Sử dụng logic mapping cho file N
                 df_processed['Loại hình'] = df_processed['Tờ khai'].apply(map_loai_hinh)
         
-        # Ẩn thông tin nhạy cảm trong cột Tên hàng
+        # Xóa thông tin nhạy cảm trong cột Tên hàng
         if 'Tên hàng' in df_processed.columns:
-            # Áp dụng masking dựa trên loại file
+            # Áp dụng logic xóa thông tin nhạy cảm dựa trên loại file
             if os.path.basename(file_path).lower().startswith('x'):
-                # Sử dụng masking logic cho file X
+                # Sử dụng logic xóa thông tin nhạy cảm cho file X
                 df_processed['Tên hàng'] = df_processed['Tên hàng'].apply(lambda x: mask_sensitive_info(x, file_path))
             else:
-                # Sử dụng masking logic cho file N
+                # Sử dụng logic xóa thông tin nhạy cảm cho file N
                 df_processed['Tên hàng'] = df_processed['Tên hàng'].apply(lambda x: mask_sensitive_info(x, file_path))
         
         # Sắp xếp theo ngày (nhập hoặc xuất tùy theo loại file)
@@ -697,7 +670,27 @@ def process_data(file_path):
         # Reset index
         df_processed = df_processed.reset_index(drop=True)
         
-
+        # Xử lý xóa dữ liệu theo yêu cầu
+        if os.path.basename(file_path).lower().startswith('x'):
+            # File X (file xuất): Xóa dữ liệu cột "Đơn vị đối tác"
+            if 'Đơn vị đối tác' in df_processed.columns:
+                df_processed['Đơn vị đối tác'] = ''
+        else:
+            # File N (file nhập): Xóa dữ liệu cột "Nhà cung cấp" chứa các từ khóa
+            if 'Nhà cung cấp' in df_processed.columns:
+                # Các từ khóa cần xóa
+                keywords = ['tnhh', 'trach nhiem huu han', 'cp', 'co phan', 'vietnam', 'viet nam', 'vn']
+                
+                # Hàm kiểm tra xem có chứa từ khóa nào không
+                def contains_keywords(text):
+                    if pd.isna(text) or text == '':
+                        return False
+                    text_str = str(text).lower()
+                    return any(keyword in text_str for keyword in keywords)
+                
+                # Xóa dữ liệu các dòng chứa từ khóa
+                mask = df_processed['Nhà cung cấp'].apply(contains_keywords)
+                df_processed.loc[mask, 'Nhà cung cấp'] = ''
         
         # Xóa cột 'Tờ khai' khỏi file sau khi xử lý
         if 'Tờ khai' in df_processed.columns:
